@@ -64,14 +64,22 @@ jobs:
             echo "Found JAR file: $COREPROTECT_JAR"
           fi
 
-      # Create Release with date and short SHA as tag name
+      # Set date and short sha as tag name
+      - name: Set date and short sha as tag name
+        id: set_tag_name
+        run: |
+          SHORT_SHA=${GITHUB_SHA::7}
+          DATE=$(date +'%Y-%m-%d')
+          echo "TAG_NAME=${DATE}-${SHORT_SHA}" >> $GITHUB_ENV
+
+      # Create Release
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ format('{0}-{1}', github.event.schedule.at, github.sha[0..7]) }}  # 使用日期和短SHA作为标签名
+          tag_name: ${{ env.TAG_NAME }}  # 使用日期和短SHA作为标签名
           body: "Automated daily build"  # 发布描述
           draft: false  # 设置为 false 表示发布不是草稿
           prerelease: true  # 标记为预发布

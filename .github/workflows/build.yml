@@ -19,7 +19,7 @@ jobs:
 
       # Clone the external repository using git clone command
       - name: Clone External Repository
-        run: git clone --branch main https://github.com/PlayPro/CoreProtect
+        run: git clone --branch master https://github.com/PlayPro/CoreProtect
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4

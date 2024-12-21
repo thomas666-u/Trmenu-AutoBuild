@@ -88,7 +88,8 @@ jobs:
       # Debugging: Print release creation result
       - name: Debug Release Creation
         if: steps.create_release.outcome == 'success'
-        run: echo "Release created successfully with tag: ${{ env.TAG_NAME }}"
+        run: |
+          echo "Release created successfully with tag: ${{ env.TAG_NAME }}"
 
       # Validate JAR file existence and print absolute path
       - name: Validate JAR file existence

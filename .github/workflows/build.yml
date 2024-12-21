@@ -13,12 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Original Repository
+      # Checkout the current repository (if needed for any reason)
+      - name: Checkout Current Repository
         uses: actions/checkout@v4
-        with:
-          repository: PlayPro/CoreProtect  # 替换为原始仓库的所有者和名称
-          ref: main  # 替换为你要拉取的分支名
-          persist-credentials: false  # 不保存凭据，因为是公共仓库
+
+      # Clone the external repository using git clone command
+      - name: Clone External Repository
+        run: |
+          git clone --branch main https://github.com/PlayPro/CoreProtect.git ./external-coreprotect
+          cd ./external-coreprotect
+          git config advice.detachedHead false  # Suppress warning about being in 'detached HEAD' state
+          ls -la  # List files to verify the clone was successful
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4

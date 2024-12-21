@@ -22,7 +22,7 @@ jobs:
 
       # Verify POM file exists in the cloned repository
       - name: Verify POM file exists
-        run: ls -la ./external-coreprotect/pom.xml
+        run: ls -la ./external-coreprotect/pom.xml || (echo "POM file not found" && exit 1)
 
       # Set up JDK 21
       - name: Set up JDK 21
@@ -44,19 +44,32 @@ jobs:
         run: mvn -B verify
         working-directory: ./external-coreprotect
 
-      # Unzip Artifact
+      # List target directory contents to check if ZIP files are generated
+      - name: List target directory contents
+        run: ls -la ./external-coreprotect/target/
+
+      # Unzip Artifact, only proceed if there are zip files in target directory
       - name: Unzip Artifact
+        if: success() && contains(github.workspace, '*.zip')
         run: |
-          unzip -j target/*.zip "CoreProtect-*.jar" -d target/
-          ls -l target/
+          find ./external-coreprotect/target -name "*.zip" | while read zipfile; do
+            unzip -j "$zipfile" "CoreProtect-*.jar" -d ./external-coreprotect/target/
+          done
+          ls -l ./external-coreprotect/target/
         working-directory: ./external-coreprotect
 
       # Find CoreProtect JAR File
       - name: Find CoreProtect JAR File
         id: find-jar
         run: |
-          echo "COREPROTECT_JAR=$(find ./external-coreprotect/target -name 'CoreProtect-*.jar')" >> $GITHUB_ENV
-          echo "Found JAR file: $COREPROTECT_JAR"
+          COREPROTECT_JAR=$(find ./external-coreprotect/target -name 'CoreProtect-*.jar')
+          if [ -z "$COREPROTECT_JAR" ]; then
+            echo "JAR file not found"
+            exit 1
+          else
+            echo "COREPROTECT_JAR=$COREPROTECT_JAR" >> $GITHUB_ENV
+            echo "Found JAR file: $COREPROTECT_JAR"
+          fi
 
       # Create Release
       - name: Create Release

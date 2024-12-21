@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '0 5 * * *'  # 每天凌晨5点触发
 
+  push:
+    branches:
+        - main  # 确保你推送的是这个分支
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest

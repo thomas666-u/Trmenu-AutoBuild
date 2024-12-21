@@ -71,6 +71,7 @@ jobs:
           SHORT_SHA=${GITHUB_SHA::7}
           DATE=$(date +'%Y-%m-%d')
           echo "TAG_NAME=${DATE}-${SHORT_SHA}" >> $GITHUB_ENV
+          echo "Tag name will be: ${DATE}-${SHORT_SHA}"
 
       # Create Release
       - name: Create Release
@@ -84,10 +85,27 @@ jobs:
           draft: false  # 设置为 false 表示发布不是草稿
           prerelease: true  # 标记为预发布
 
+      # Debugging: Print release creation result
+      - name: Debug Release Creation
+        if: steps.create_release.outcome == 'success'
+        run: echo "Release created successfully with tag: ${{ env.TAG_NAME }}"
+
+      # Validate JAR file existence and print absolute path
+      - name: Validate JAR file existence
+        if: steps.find-jar.outputs.COREPROTECT_JAR != ''
+        run: |
+          JAR_PATH=${{ env.COREPROTECT_JAR }}
+          if [ ! -f "$JAR_PATH" ]; then
+            echo "JAR file does not exist at: $JAR_PATH"
+            exit 1
+          else
+            echo "JAR file exists at: $(realpath $JAR_PATH)"
+          fi
+
       # Upload CoreProtect JAR to Release
       - name: Upload CoreProtect JAR to Release
-        if: steps.find-jar.outputs.COREPROTECT_JAR != ''
-        uses: actions/upload-release-asset@v1
+        if: steps.create_release.outcome == 'success' && steps.find-jar.outputs.COREPROTECT_JAR != ''
+        uses: actions/upload-release-asset@v1.0.0  # 使用最新版本
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -95,3 +113,10 @@ jobs:
           asset_path: ${{ env.COREPROTECT_JAR }}  # 动态获取的JAR文件路径
           asset_name: coreprotect.jar  # 上传的文件名
           asset_content_type: application/java-archive
+
+      # Debugging: Print upload details
+      - name: Debug Upload Details
+        if: steps.create_release.outcome == 'success' && steps.find-jar.outputs.COREPROTECT_JAR != ''
+        run: |
+          echo "Upload URL: ${{ steps.create_release.outputs.upload_url }}"
+          echo "Asset Path: ${{ env.COREPROTECT_JAR }}"

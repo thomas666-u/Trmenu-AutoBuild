@@ -19,6 +19,13 @@ jobs:
       - name: Checkout Current Repository
         uses: actions/checkout@v4
 
+      # Clear Gradle cache before starting the build
+      - name: Clear Gradle Cache
+        run: |
+          rm -rf $HOME/.gradle/caches
+          mkdir -p $HOME/.gradle/caches
+        if: always()  # Ensure this step runs regardless of previous steps' success or failure
+
       # Clone the external repository to a specific path
       - name: Clone External Repository
         run: git clone --branch master https://github.com/PlayPro/CoreProtect ./external-coreprotect

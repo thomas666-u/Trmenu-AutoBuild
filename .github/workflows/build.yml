@@ -3,10 +3,9 @@ name: Daily Build and Deploy
 on:
   schedule:
     - cron: '0 5 * * *'  # 每天凌晨5点触发
-
   push:
     branches:
-        - main  # 确保你推送的是这个分支
+      - main  # 确保你推送的是这个分支
 
 jobs:
   build-and-deploy:
@@ -17,37 +16,49 @@ jobs:
       - name: Checkout Current Repository
         uses: actions/checkout@v4
 
-      # Clone the external repository using git clone command
+      # Clone the external repository to a specific path
       - name: Clone External Repository
-        run: git clone --branch master https://github.com/PlayPro/CoreProtect
+        run: git clone --branch master https://github.com/PlayPro/CoreProtect ./external-coreprotect
 
+      # Verify POM file exists in the cloned repository
+      - name: Verify POM file exists
+        run: ls -la ./external-coreprotect/pom.xml
+
+      # Set up JDK 21
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
+      # Cache Maven packages
       - name: Cache Maven packages
         uses: actions/cache@v3
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('external-coreprotect/**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
 
+      # Build with Maven in the correct directory
       - name: Build with Maven
         run: mvn -B verify
+        working-directory: ./external-coreprotect
 
+      # Unzip Artifact
       - name: Unzip Artifact
         run: |
           unzip -j target/*.zip "CoreProtect-*.jar" -d target/
           ls -l target/
+        working-directory: ./external-coreprotect
 
+      # Find CoreProtect JAR File
       - name: Find CoreProtect JAR File
         id: find-jar
         run: |
-          echo "COREPROTECT_JAR=$(find target -name 'CoreProtect-*.jar')" >> $GITHUB_ENV
+          echo "COREPROTECT_JAR=$(find ./external-coreprotect/target -name 'CoreProtect-*.jar')" >> $GITHUB_ENV
           echo "Found JAR file: $COREPROTECT_JAR"
 
+      # Create Release
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -59,6 +70,7 @@ jobs:
           draft: false  # 设置为 false 表示发布不是草稿
           prerelease: true  # 标记为预发布
 
+      # Upload CoreProtect JAR to Release
       - name: Upload CoreProtect JAR to Release
         if: steps.find-jar.outputs.COREPROTECT_JAR != ''
         uses: actions/upload-release-asset@v1

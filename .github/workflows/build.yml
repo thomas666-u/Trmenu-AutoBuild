@@ -1,0 +1,66 @@
+name: Daily Build and Deploy
+
+on:
+  schedule:
+    - cron: '0 5 * * *'  # 每天凌晨5点触发
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Original Repository
+        uses: actions/checkout@v4
+        with:
+          repository: PlayPro/CoreProtect  # 替换为原始仓库的所有者和名称
+          ref: main  # 替换为你要拉取的分支名
+          persist-credentials: false  # 不保存凭据，因为是公共仓库
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build with Maven
+        run: mvn -B verify
+
+      - name: Unzip Artifact
+        run: |
+          unzip -j target/*.zip "CoreProtect-*.jar" -d target/
+          ls -l target/
+
+      - name: Find CoreProtect JAR File
+        id: find-jar
+        run: |
+          echo "COREPROTECT_JAR=$(find target -name 'CoreProtect-*.jar')" >> $GITHUB_ENV
+          echo "Found JAR file: $COREPROTECT_JAR"
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: "daily-build-${{ github.run_number }}"  # 使用工作流运行次数作为标签名
+          body: "Automated daily build"  # 发布描述
+          draft: false  # 设置为 false 表示发布不是草稿
+          prerelease: true  # 标记为预发布
+
+      - name: Upload CoreProtect JAR to Release
+        if: steps.find-jar.outputs.COREPROTECT_JAR != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  # 从创建Release步骤获取上传URL
+          asset_path: ${{ env.COREPROTECT_JAR }}  # 动态获取的JAR文件路径
+          asset_name: coreprotect.jar  # 上传的文件名
+          asset_content_type: application/java-archive

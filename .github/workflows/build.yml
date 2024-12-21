@@ -23,6 +23,13 @@ jobs:
       - name: Clone External Repository
         run: git clone --branch master https://github.com/PlayPro/CoreProtect ./external-coreprotect
 
+      # Modify build.gradle to set projectBranch to 'development'
+      - name: Set projectBranch in build.gradle
+        working-directory: ./external-coreprotect
+        run: |
+          sed -i '11s|^.*|String projectBranch = "development"|' build.gradle
+          cat build.gradle  # Print the modified file to confirm changes
+
       # Verify POM file exists in the cloned repository
       - name: Verify POM file exists
         run: ls -la ./external-coreprotect/pom.xml || (echo "POM file not found" && exit 1)

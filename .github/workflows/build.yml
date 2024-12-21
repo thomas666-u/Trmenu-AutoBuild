@@ -11,6 +11,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write  # 确保有足够的权限来创建发布
+
     steps:
       # Checkout the current repository (if needed for any reason)
       - name: Checkout Current Repository
@@ -44,19 +47,9 @@ jobs:
         run: mvn -B verify
         working-directory: ./external-coreprotect
 
-      # List target directory contents to check if ZIP files are generated
+      # List target directory contents to check if JAR files are generated
       - name: List target directory contents
         run: ls -la ./external-coreprotect/target/
-
-      # Unzip Artifact, only proceed if there are zip files in target directory
-      - name: Unzip Artifact
-        if: success() && contains(github.workspace, '*.zip')
-        run: |
-          find ./external-coreprotect/target -name "*.zip" | while read zipfile; do
-            unzip -j "$zipfile" "CoreProtect-*.jar" -d ./external-coreprotect/target/
-          done
-          ls -l ./external-coreprotect/target/
-        working-directory: ./external-coreprotect
 
       # Find CoreProtect JAR File
       - name: Find CoreProtect JAR File
@@ -71,14 +64,14 @@ jobs:
             echo "Found JAR file: $COREPROTECT_JAR"
           fi
 
-      # Create Release
+      # Create Release with date and short SHA as tag name
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: "daily-build-${{ github.run_number }}"  # 使用工作流运行次数作为标签名
+          tag_name: ${{ format('{0}-{1}', github.event.schedule.at, github.sha[0..7]) }}  # 使用日期和短SHA作为标签名
           body: "Automated daily build"  # 发布描述
           draft: false  # 设置为 false 表示发布不是草稿
           prerelease: true  # 标记为预发布

@@ -1,12 +1,14 @@
 # CoreProtect-AutoBuild
 
-每日自动拉取并构建一次CoreProtect。
+[![Daily Build and Deploy](https://github.com/Midnight-2004/CoreProtect-AutoBuild/actions/workflows/build.yml/badge.svg)](https://github.com/Midnight-2004/CoreProtect-AutoBuild/actions/workflows/build.yml)
+
+每周二、四、六自动拉取并构建一次CoreProtect。
 
 ## 为什么会有这个仓库？
 
-自2024年5月推出22.4版本后，CoreProtect未再发布适用于Minecraft 1.21的更新。然而，通过在Patreon上支持该项目，用户可以获得最新构建版本。
+自2024年5月推出`22.4`版本后，CoreProtect 未再发布适用于 Minecraft 1.21 的更新。然而，通过在 Patreon 上支持该项目，用户可以获得最新构建版本。
 
-尽管开发者未在SpigotMC或Modrinth平台更新，CoreProtect的GitHub仓库持续保持活跃更新。因此，我们得以维护一个每日同步最新构建版本的仓库。
+尽管开发者未在 SpigotMC 或 Modrinth 平台更新，CoreProtect 的 GitHub 仓库仍在持续更新。因此，我们得以维护一个同步最新构建版本的仓库。
 
 ## 注意事项
 
@@ -14,8 +16,8 @@
 
 提示：
 
-- 如果你使用的是SQLite数据库，我建议你将原来的数据库及插件增加一个`.disabled`的后缀名来禁用，需要恢复的时候把后缀名删掉即可。
-- 如果你用的是MySQL，那为啥不直接新建一个数据库呢？
+- 如果你使用的是`SQLite`数据库，我建议你将原来的数据库及插件增加一个`.disabled`的后缀名来禁用，需要恢复的时候把后缀名删掉即可。
+- 如果你用的是`MySQL`，那为啥不直接新建一个数据库呢？
 
 ## 汉化文件下载及使用
 
@@ -31,12 +33,14 @@
 
 ![CoreProtect](https://userfolio.com/uploads/coreprotect-banner-v19.png)
 
-CoreProtect is a blazing fast data logging and anti-griefing tool for Minecraft servers.
-CoreProtect 是适用于 Minecraft 服务器的超快速数据记录和反恶意破坏工具。
+[CoreProtect](https://github.com/PlayPro/CoreProtect) is a blazing fast data logging and anti-griefing tool for Minecraft servers.
+
+[CoreProtect](https://github.com/PlayPro/CoreProtect) 是适用于 Minecraft 服务器的超快速数据记录和反恶意破坏工具。
 
 For a detailed description of the plugin, please visit [coreprotect.net](https://coreprotect.net).
+
 有关插件的详细说明，请访问 [coreprotect.net](https://coreprotect.net)。
 
-## bstats
+### bstats
 
 [![bStats Graph Data](https://bstats.org/signatures/bukkit/CoreProtect.svg)](https://bstats.org/plugin/bukkit/CoreProtect)

@@ -2,10 +2,14 @@ name: Daily Build and Deploy
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # 每天凌晨5点触发
+    - cron: '0 5 * * 2,4,6'  # 每周二、四、六凌晨5点触发
   push:
     branches:
-      - main  # 确保你推送的是这个分支
+      - main
+  pull_request:
+    branches: 
+      - main 
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:

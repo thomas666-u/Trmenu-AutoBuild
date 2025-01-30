@@ -44,3 +44,8 @@ For a detailed description of the plugin, please visit [coreprotect.net](https:/
 ### bstats
 
 [![bStats Graph Data](https://bstats.org/signatures/bukkit/CoreProtect.svg)](https://bstats.org/plugin/bukkit/CoreProtect)
+
+
+## 本仓库的 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Midnight-2004/CoreProtect-AutoBuild&type=Date)](https://star-history.com/#Midnight-2004/CoreProtect-AutoBuild&Date)

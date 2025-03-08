@@ -4,107 +4,66 @@ on:
   schedule:
     - cron: '0 5 * * 2,4,6'  # 每周二、四、六凌晨5点触发
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches: 
-      - main 
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     permissions:
-      contents: write  # 确保有足够的权限来创建发布
+      contents: write  # 发布所需的权限
 
     steps:
-      # Checkout the current repository (if needed for any reason)
+      # 克隆当前仓库（如果需要访问当前仓库内容）
       - name: Checkout Current Repository
         uses: actions/checkout@v4
 
-      # Clone the external repository to a specific path
-      - name: Clone External Repository
+      # 克隆上游仓库（保持与上游同步的关键修改）
+      - name: Clone Upstream Repository
         run: git clone --branch master https://github.com/PlayPro/CoreProtect ./external-coreprotect
 
-      # Modify pom.xml to set project.branch to 'development'
-      - name: Set project.branch in pom.xml
+      # 修改上游的 pom.xml
+      - name: Patch pom.xml
         working-directory: ./external-coreprotect
         run: |
+          # 修改版本号和分支参数
           sed -i '5s|<version>22.4</version>|<version>23.0</version>|' pom.xml
           sed -i '7s|<project.branch></project.branch>|<project.branch>development</project.branch>|' pom.xml
-          cat pom.xml  # Print the modified file to confirm changes
+          cat pom.xml  # 验证修改
 
-      # Modify build.gradle to set projectBranch to 'development'
-      - name: Set projectBranch in build.gradle
-        working-directory: ./external-coreprotect
-        run: |
-          sed -i "10s|^.*|String projectVersion = '23.0'|" build.gradle
-          sed -i "11s|^.*|String projectBranch = 'development'|" build.gradle
-          cat build.gradle  # Print the modified file to confirm changes
-
-      # Verify POM file exists in the cloned repository
-      - name: Verify POM file exists
-        run: ls -la ./external-coreprotect/pom.xml || (echo "POM file not found" && exit 1)
-
-      # Set up JDK 21
+      # 设置 Java 环境（与上游保持完全一致）
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
 
-      # Cache Maven packages
+      # Maven 依赖缓存（路径与上游统一）
       - name: Cache Maven packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4  # 升级到 v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-m2-${{ hashFiles('external-coreprotect/**/pom.xml') }}
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('external-coreprotect/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2-
 
-      # Build with Maven in the correct directory
+      # Maven 构建（使用上游相同的构建命令）
       - name: Build with Maven
         run: mvn -B verify
         working-directory: ./external-coreprotect
 
-      # List target directory contents to check if JAR files are generated
-      - name: List target directory contents
-        run: ls -la ./external-coreprotect/target/
-
-      # Find CoreProtect JAR File
-      - name: Find CoreProtect JAR File
-        id: find-jar
+      # 产物验证（下游特有逻辑保留）
+      - name: Verify Artifacts
         run: |
-          COREPROTECT_JAR=$(find ./external-coreprotect/target -name 'CoreProtect-*.jar')
-          if [ -z "$COREPROTECT_JAR" ]; then
-            echo "JAR file not found"
-            exit 1
-          else
-            echo "COREPROTECT_JAR=$COREPROTECT_JAR" >> $GITHUB_ENV
-            echo "Found JAR file: $COREPROTECT_JAR"
-          fi
+          ls -la ./external-coreprotect/target/
+          test -f ./external-coreprotect/target/*.jar || (echo "JAR not found" && exit 1)
 
-      # Set date and short sha as tag name
-      - name: Set date and short sha as tag name
-        id: set_tag_name
-        run: |
-          SHORT_SHA=${GITHUB_SHA::7}
-          DATE=$(date +'%Y-%m-%d')
-          echo "TAG_NAME=${DATE}-${SHORT_SHA}" >> $GITHUB_ENV
-          echo "Tag name will be: ${DATE}-${SHORT_SHA}"
-
-      # Upload Artifacts
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4  # 使用最新版本
-        with:
-          name: CoreProtect Artifacts
-          path: ./external-coreprotect/target/*.jar  # 确保这个路径是正确的
-
-      # Auto Release
+      # 自动发布（下游特有逻辑保留）
       - name: Auto Release
-        uses: marvinpinto/action-automatic-releases@latest  # 使用最新稳定版本
+        uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: ${{ env.TAG_NAME }}
+          automatic_release_tag: ${{ format('{0}-{1}', github.run_number, github.sha) }}
           prerelease: false
           files: ./external-coreprotect/target/*.jar

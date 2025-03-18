@@ -2,7 +2,7 @@
 
 [![Daily Build and Deploy](https://github.com/Midnight-2004/CoreProtect-AutoBuild/actions/workflows/build.yml/badge.svg)](https://github.com/Midnight-2004/CoreProtect-AutoBuild/actions/workflows/build.yml)
 
-每周二、四、六自动拉取并构建一次CoreProtect。
+每周三/周日自动拉取并构建一次CoreProtect。
 
 ## 为什么会有这个仓库？
 

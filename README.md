@@ -1,6 +1,6 @@
 # CoreProtect-AutoBuild
 
-[![Daily Build and Deploy](https://github.com/Midnight-2004/CoreProtect-AutoBuild/actions/workflows/build.yml/badge.svg)](https://github.com/Midnight-2004/CoreProtect-AutoBuild/actions/workflows/build.yml)
+[![Build and Deploy](https://github.com/Midnight-2004/CoreProtect-AutoBuild/actions/workflows/build.yml/badge.svg)](https://github.com/Midnight-2004/CoreProtect-AutoBuild/actions/workflows/build.yml)
 
 每周三/周日自动拉取并构建一次CoreProtect。
 
@@ -33,11 +33,7 @@
 
 ![CoreProtect](https://userfolio.com/uploads/coreprotect-banner-v19.png)
 
-[CoreProtect](https://github.com/PlayPro/CoreProtect) is a blazing fast data logging and anti-griefing tool for Minecraft servers.
-
 [CoreProtect](https://github.com/PlayPro/CoreProtect) 是适用于 Minecraft 服务器的超快速数据记录和反恶意破坏工具。
-
-For a detailed description of the plugin, please visit [coreprotect.net](https://coreprotect.net).
 
 有关插件的详细说明，请访问 [coreprotect.net](https://coreprotect.net)。
 
@@ -45,7 +41,6 @@ For a detailed description of the plugin, please visit [coreprotect.net](https:/
 
 [![bStats Graph Data](https://bstats.org/signatures/bukkit/CoreProtect.svg)](https://bstats.org/plugin/bukkit/CoreProtect)
 
-
 ## 本仓库的 Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Midnight-2004/CoreProtect-AutoBuild&type=Date)](https://star-history.com/#Midnight-2004/CoreProtect-AutoBuild&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Midnight-2004/CoreProtect-AutoBuild&type=Date)](https://www.star-history.com/#Midnight-2004/CoreProtect-AutoBuild&Date)

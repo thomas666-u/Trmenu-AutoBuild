@@ -16,9 +16,6 @@ jobs:
       contents: write  # 发布所需的权限
 
     steps:
-      # 克隆当前仓库（如果需要访问当前仓库内容）
-      - name: Checkout Current Repository
-        uses: actions/checkout@v4
 
       # 克隆上游仓库（保持与上游同步的关键修改）
       - name: Clone Upstream Repository
@@ -29,7 +26,7 @@ jobs:
         working-directory: ./external-coreprotect
         run: |
           # 修改版本号和分支参数
-          sed -i '5s|<version>22.4</version>|<version>23.0</version>|' pom.xml
+          sed -i '5s|<version>22.4</version>|<version>23.3-dev</version>|' pom.xml
           sed -i '7s|<project.branch></project.branch>|<project.branch>development</project.branch>|' pom.xml
           cat pom.xml  # 验证修改
 

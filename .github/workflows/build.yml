@@ -16,6 +16,10 @@ jobs:
       contents: write  # 发布所需的权限
 
     steps:
+
+      # 克隆上游仓库（保持与上游同步的关键修改）
+      - name: Clone Upstream Repository
+        run: git clone --branch stable/v3 https://github.com/CoderKuo/TrMenu
       # 步骤1: 检出仓库
       - name: Checkout Repository
         uses: actions/checkout@v4

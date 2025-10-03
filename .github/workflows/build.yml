@@ -2,7 +2,7 @@ name: Build and Deploy TrMenu
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # 6小时一次
+    - cron: '0 5 * * *'  # 每天凌晨5点触发
   push:
     branches: [main]
   pull_request:
@@ -16,64 +16,65 @@ jobs:
       contents: write  # 发布所需的权限
 
     steps:
-
-      # 克隆上游仓库（保持与上游同步的关键修改）
-      - name: Clone Upstream Repository
-        run: git clone --branch stable/v3 https://github.com/CoderKuo/TrMenu
-      # 步骤1: 检出仓库
+      # 步骤1: 检出当前仓库（如果需要）
       - name: Checkout Repository
         uses: actions/checkout@v4
-        
-      # 步骤2: 设置 Java 环境 (TrMenu 使用 Java 8)
+
+      # 步骤2: 克隆 TrMenu 仓库
+      - name: Clone TrMenu Repository
+        run: git clone --branch stable/v3 https://github.com/CoderKuo/TrMenu.git ./trmenu-source
+
+      # 步骤3: 设置 Java 环境 (TrMenu 使用 Java 8)
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 8
 
-      # 步骤3: 设置 Gradle
+      # 步骤4: 设置 Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      # 步骤4: 使 Gradle Wrapper 可执行
+      # 步骤5: 使 Gradle Wrapper 可执行
       - name: Make Gradle Wrapper Executable
-        run: chmod +x ./gradlew
+        run: chmod +x ./trmenu-source/gradlew
+        working-directory: ./
 
-      # 步骤5: 构建项目
-      - name: Build
+      # 步骤6: 构建 TrMenu
+      - name: Build TrMenu
         run: ./gradlew build
+        working-directory: ./trmenu-source
 
-      # 步骤6: 设置日期和短 SHA 作为标签名
+      # 步骤7: 设置日期和短 SHA 作为标签名
       - name: Set date and short sha as tag name
         id: set_tag
         run: |
           DATE=$(date +'%y%m%d-%H%M')  # 修改日期格式为 yyMMdd-HHmm
-          echo "TAG_NAME=build-$DATE" >> $GITHUB_ENV  # 添加前缀 build-
+          echo "TAG_NAME=trmenu-build-$DATE" >> $GITHUB_ENV  # 添加前缀 trmenu-build-
           echo "Generated Tag: ${{ env.TAG_NAME }}"
 
-      # 步骤7: 验证构建产物
+      # 步骤8: 验证构建产物
       - name: Verify Artifacts
         run: |
-          ls -la ./build/libs/
+          ls -la ./trmenu-source/build/libs/
           
           # 检查构建产物是否存在
-          if ! ls ./build/libs/*.jar 1> /dev/null 2>&1; then
-            echo "::error::No JAR files found in build/libs/"
+          if ! ls ./trmenu-source/build/libs/*.jar 1> /dev/null 2>&1; then
+            echo "::error::No JAR files found in trmenu-source/build/libs/"
             exit 1
           fi
 
-          echo "Build artifacts verified successfully"
+          echo "TrMenu build artifacts verified successfully"
 
-      # 步骤8: 上传构建产物到 Artifacts (用于调试和 PR)
+      # 步骤9: 上传构建产物到 Artifacts (用于调试和 PR)
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: TrMenu Artifacts
-          path: build/libs/*.jar
+          path: trmenu-source/build/libs/*.jar
           retention-days: 30
 
-      # 步骤9: 自动发布
-      
+
       # 发布文件
       - name: Auto Release
         uses: marvinpinto/action-automatic-releases@latest
@@ -81,4 +82,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           automatic_release_tag: ${{ env.TAG_NAME }}
           prerelease: true
-          files: build/libs/*.jar
+          files: trmenu-source/build/libs/*.jar

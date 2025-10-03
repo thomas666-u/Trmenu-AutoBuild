@@ -13,12 +13,14 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # 发布所需的权限
+      contents: write  # 确保有写入权限
 
     steps:
-      # 步骤1: 检出当前仓库（如果需要）
+      # 步骤1: 检出当前仓库
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # 步骤2: 克隆 TrMenu 仓库
       - name: Clone TrMenu Repository
@@ -38,19 +40,18 @@ jobs:
       # 步骤5: 使 Gradle Wrapper 可执行
       - name: Make Gradle Wrapper Executable
         run: chmod +x ./trmenu-source/gradlew
-        working-directory: ./
 
       # 步骤6: 构建 TrMenu
       - name: Build TrMenu
         run: ./gradlew build
         working-directory: ./trmenu-source
 
-      # 步骤7: 设置日期和短 SHA 作为标签名
-      - name: Set date and short sha as tag name
+      # 步骤7: 设置日期作为标签名
+      - name: Set date as tag name
         id: set_tag
         run: |
-          DATE=$(date +'%y%m%d-%H%M')  # 修改日期格式为 yyMMdd-HHmm
-          echo "TAG_NAME=trmenu-build-$DATE" >> $GITHUB_ENV  # 添加前缀 trmenu-build-
+          DATE=$(date +'%Y%m%d-%H%M%S')  # 使用更精确的时间格式，包含秒
+          echo "TAG_NAME=trmenu-build-$DATE" >> $GITHUB_ENV
           echo "Generated Tag: ${{ env.TAG_NAME }}"
 
       # 步骤8: 验证构建产物
@@ -66,7 +67,7 @@ jobs:
 
           echo "TrMenu build artifacts verified successfully"
 
-      # 步骤9: 上传构建产物到 Artifacts (用于调试和 PR)
+      # 步骤9: 上传构建产物到 Artifacts
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -74,12 +75,26 @@ jobs:
           path: trmenu-source/build/libs/*.jar
           retention-days: 30
 
+      # 步骤10: 创建 Git 标签
+      - name: Create Git Tag
+        if: github.event_name != 'pull_request'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "${{ env.TAG_NAME }}" -m "Automated TrMenu build ${{ env.TAG_NAME }}"
+          git push origin "${{ env.TAG_NAME }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 发布文件
-      - name: Auto Release
-        uses: marvinpinto/action-automatic-releases@latest
+      # 步骤11: 创建 Release
+      - name: Create Release
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: ${{ env.TAG_NAME }}
-          prerelease: true
+          tag_name: ${{ env.TAG_NAME }}
+          name: "TrMenu Build ${{ env.TAG_NAME }}"
+          body: "Automated build of TrMenu from stable/v3 branch"
           files: trmenu-source/build/libs/*.jar
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -2,7 +2,7 @@ name: Build and Deploy TrMenu
 
 on:
   schedule:
-    - cron: '0 5 * * *'  # 每天凌晨5点触发
+    - cron: '0 */6 * * *'   #每6小时一次
   push:
     branches: [main]
   pull_request:
